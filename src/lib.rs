@@ -129,11 +129,22 @@ impl Server {
     fn execute_command(&mut self, command: &str) -> String {
         let cleaned_command = command.replace('\0', "");
 
-        let mut command_iter = cleaned_command.split(" ");
-
         // currently creates new shell session on every run, not what i want
+
+        #[cfg(target_os = "windows")]
         let output = Command::new("cmd")
             .arg("/c")
+            .arg(cleaned_command)
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .unwrap()
+            .wait_with_output()
+            .unwrap();
+
+        #[cfg(target_os = "linux")]
+        let output = Command::new("sh")
+            .arg("-c")
             .arg(cleaned_command)
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
