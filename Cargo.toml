@@ -1,3 +1,15 @@
+[[bin]]
+name = "server"
+src = "src/bin/server.rs"
+
+[[bin]]
+name = "client"
+src = "src/bin/client.rs"
+
+[[bin]]
+name = "mitm"
+src = "src/bin/mitm.rs"
+
 [package]
 name = "lemur"
 version = "0.1.0"
