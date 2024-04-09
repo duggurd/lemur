@@ -14,8 +14,8 @@ impl<'a, A> ServerArgs<'a, A>
 where
     A: ToSocketAddrs + Display,
 {
-    pub fn from_args(cli_args: &'a Vec<A>) -> Self {
-        let mut arg_iter = cli_args.into_iter();
+    pub fn from_args(cli_args: &'a [A]) -> Self {
+        let mut arg_iter = cli_args.iter();
 
         let proxy_addr = arg_iter.next().expect("expected proxy address <addr:port>");
 
@@ -49,7 +49,7 @@ impl Server {
         let mut buf = [0_u8; 1024];
 
         loop {
-            if let Err(_) = self.proxy_stream.read(&mut buf) {
+            if self.proxy_stream.read(&mut buf).is_err() {
                 panic!("error occured when reading stream");
             }
 
@@ -59,7 +59,7 @@ impl Server {
 
             let output = self.execute_command(&cmd);
 
-            self.proxy_stream.write(output.as_bytes()).unwrap();
+            let _ = self.proxy_stream.write(output.as_bytes()).unwrap();
             self.proxy_stream.flush().unwrap();
         }
     }
@@ -92,11 +92,11 @@ impl Server {
             .unwrap();
 
         let mut data = String::from_utf8(output.stdout).unwrap();
-        if data == "" {
+        if data.is_empty() {
             data = format!("{}", output.status)
         }
         println!("command output: {}", data);
 
-        return data;
+        data
     }
 }

@@ -13,8 +13,8 @@ impl<'a, A> ClientArgs<'a, A>
 where
     A: ToSocketAddrs + Display,
 {
-    pub fn from_args(cli_args: &'a Vec<A>) -> Self {
-        let mut arg_iter = cli_args.into_iter();
+    pub fn from_args(cli_args: &'a [A]) -> Self {
+        let mut arg_iter = cli_args.iter();
 
         let proxy_addr = arg_iter.next().expect("expected proxy address <addr:port>");
 
@@ -47,12 +47,12 @@ impl Client {
     pub fn send_command(&mut self, command: &[u8]) {
         let mut buf = [0_u8; 1024];
 
-        if let Err(_) = self.proxy_stream.write(command) {
+        if self.proxy_stream.write(command).is_err() {
             panic!("error occured writing command")
         }
         self.proxy_stream.flush().unwrap();
 
-        if let Err(_) = self.proxy_stream.read(&mut buf) {
+        if self.proxy_stream.read(&mut buf).is_err() {
             panic!("Error occured while reading from stream")
         }
 
@@ -66,7 +66,7 @@ impl Client {
 
         loop {
             let mut buf = [0_u8; 1024];
-            if let Err(_) = stdin.read(&mut buf) {
+            if stdin.read(&mut buf).is_err() {
                 panic!("Failed to read stdin");
             }
 

@@ -15,8 +15,8 @@ impl<'a, A> ProxyArgs<'a, A>
 where
     A: ToSocketAddrs + Display,
 {
-    pub fn from_args(cli_args: &'a Vec<A>) -> Self {
-        let mut arg_iter = cli_args.into_iter();
+    pub fn from_args(cli_args: &'a [A]) -> Self {
+        let mut arg_iter = cli_args.iter();
 
         let server_l_addr = arg_iter
             .next()
@@ -95,19 +95,19 @@ impl Proxy {
         loop {
             let mut buf = [0_u8; 1024];
 
-            if let Err(_) = self.client_stream.read(&mut buf) {
+            if self.client_stream.read(&mut buf).is_err() {
                 println!("error reading");
-                self.client_stream.write(b"failed to read").unwrap();
+                let _ = self.client_stream.write(b"failed to read").unwrap();
                 self.client_stream.flush().unwrap();
             }
 
-            self.server_stream.write(&buf).unwrap();
+            let _ = self.server_stream.write(&buf).unwrap();
             self.server_stream.flush().unwrap();
 
             buf.fill(0);
 
-            self.server_stream.read(&mut buf).unwrap();
-            self.client_stream.write(&buf).unwrap();
+            let _ = self.server_stream.read(&mut buf).unwrap();
+            let _ = self.client_stream.write(&buf).unwrap();
             self.client_stream.flush().unwrap();
         }
     }
